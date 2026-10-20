@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "amazing-cultivation": {
+      "command": "node",
+      "args": ["C:/path/to/amazing-cultivation-mcp/src/server.mjs"],
+      "env": {
+        "ACS_ROOT": "C:/Program Files (x86)/Steam/steamapps/common/AmazingCultivationSimulator"
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "Name": "AmazingCultivationMCP",
+  "DisplayName": "Amazing Cultivation MCP",
+  "Desc": "游戏内 MCP 桥接：读取结构化状态、发现 FairyGUI 控件，并通过原版 UI 逻辑执行操作。",
+  "GameVersion": 1.268,
+  "Version": 0.5,
+  "Author": "AmazingCultivationMCP",
+  "Sort": "99998",
+  "IncreasedDesc": "0.5：新增游戏内地图点击与拖拽、原生工作命令、按帧推进与条件等待、短事务锁、动作去重和事件日志；修复人物读取、暂停状态和暂停存档。仅连接 127.0.0.1。"
+}
