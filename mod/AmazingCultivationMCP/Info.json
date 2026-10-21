@@ -1,10 +1,10 @@
 {
   "Name": "AmazingCultivationMCP",
   "DisplayName": "Amazing Cultivation MCP",
-  "Desc": "游戏内 MCP 桥接：读取结构化状态、发现 FairyGUI 控件，并通过原版 UI 逻辑执行操作。",
+  "Desc": "游戏内 MCP 桥接：读取结构化世界、修仙、灵气和风水状态，发现 FairyGUI 控件，并通过原版逻辑执行操作。",
   "GameVersion": 1.268,
-  "Version": 0.5,
+  "Version": 1.02,
   "Author": "AmazingCultivationMCP",
   "Sort": "99998",
-  "IncreasedDesc": "0.5：新增游戏内地图点击与拖拽、原生工作命令、按帧推进与条件等待、短事务锁、动作去重和事件日志；修复人物读取、暂停状态和暂停存档。仅连接 127.0.0.1。"
+  "IncreasedDesc": "1.0.2：新增掌门设置、区域屋顶建造与房间验证；包含灵气/五行场扫描、建筑风水、聚灵阵和大凶房规划，以及阵法、炼丹炼器、拜师传功、区域、交易外交、世界地图与历练功能。高风险操作要求显式确认，仅连接 127.0.0.1。"
 }

@@ -5,8 +5,19 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { captureWindow, runWindows } from './windows.mjs';
 import { runtimeCall } from './runtime-client.mjs';
+import { createLayoutTemplateStore } from './layout-template-store.mjs';
+import { HELPER_HELP, runHelper } from '../agent/helpers/index.mjs';
 
-export const SERVER_INFO = { name: 'amazing-cultivation-mcp', version: '0.5.0' };
+const layoutTemplates = createLayoutTemplateStore();
+const STATUS_METHOD_ADDITIONS = [
+  'state.godBuildingCatalog', 'state.skillTree', 'state.outspread', 'state.outspreadCatalog', 'state.dlc', 'state.refiningForecast',
+  'game.createGodBuilding', 'game.upgradeGodBuilding', 'game.removeGodBuilding', 'game.toggleGodBuilding', 'game.setGodBuildingGuard',
+  'game.moveNpcTo', 'game.learnSkillTreeNode',
+  'game.openOutspreadRegion', 'game.setOutspreadPolicy', 'game.setOutspreadBuild', 'game.cancelOutspreadBuild',
+  'game.setOutspreadChief', 'game.sendOutspreadMember', 'game.removeOutspreadMember', 'game.startOutspreadSupervision', 'game.collectOutspreadProducts',
+];
+
+export const SERVER_INFO = { name: 'amazing-cultivation-mcp', version: '1.0.2' };
 
 const METHOD_HELP = {
   'session.status': 'Report the in-game Mod session; falls back to Windows process status if the bridge is offline.',
@@ -20,7 +31,41 @@ const METHOD_HELP = {
   'state.map': 'Read structured map size and object counts from the in-game Mod.',
   'state.npcs': 'Read a paged list of active player NPCs from the in-game Mod.',
   'state.npc': 'Read one NPC by ID, including current job, needs, and work settings.',
+  'state.npcProfile': 'Read one NPC race, five base attributes, mood, features, and experiences.',
+  'state.npcCultivation': 'Read one NPC cultivation art, realm/stage, bottleneck, foundation, core, Dao, manuals, spells, and formulas.',
+  'state.breakthrough': 'Read native breakthrough readiness, probability, and factor contributions at the current NPC grid.',
+  'state.bodyCultivation': 'Read body cultivation qi, attitude, unlocked methods, quenching materials and progress, and body parts.',
+  'state.esotericaCatalog': 'Discover native esoterica definitions and whether an NPC has learned or can learn them.',
+  'state.spellCatalog': 'Discover spell and magic definitions, costs, commands, unlock state, and one NPC learned state.',
+  'state.skillTree': 'Read the current cultivation-art skill tree, prerequisites, costs, learned state, and native can-learn result.',
+  'state.godCultivation': 'Read god-cultivation faith, population, tribulations, ascension, divine-city cells/buildings, guards, and believers.',
+  'state.godBuildingCatalog': 'Read divine-city building definitions, unlock state, placement size/rings, levels, population, and faith cost.',
+  'state.interactions': 'Read native Jianghu interaction actions, fate, favour, vigilance, visitor, and expulsion eligibility for two NPCs.',
+  'state.npcSkills': 'Read all initialized skills for one NPC, including level, aptitude, experience, and bans.',
+  'state.npcHealth': 'Read one NPC body health and active injuries with treatment progress.',
+  'state.npcInventory': 'Read one NPC equipped and carried items, including artifact/manual metadata.',
+  'state.item': 'Read one item including native feng-shui properties, artifact properties, and embryo activation state.',
+  'state.refiningForecast': 'Calculate the native artifact-refining success rate, quality range, qi-inheritance range, and twelve-rate chance before dispatch.',
+  'state.combat': 'Read native FightBody state, target, casting, skills, cooldowns, auto skills, and artifacts for one or all player NPCs.',
+  'state.buildCatalog': 'Discover native build menu entries and exact names accepted by game.beginBuild/game.placeBuilding.',
+  'state.building': 'Read one building, construction progress, feng shui, workers, and production queue.',
+  'state.productionCatalog': 'Read the native recipes/tasks offered by one production building.',
+  'state.recipes': 'Discover alchemy and artifact formulas, optionally annotated with one NPC learned state.',
+  'state.formations': 'Read active formations, members, stability, pressure, shield, qi cost, and formation points.',
+  'state.formationCatalog': 'Read native formation shapes, nodes, and saved member schemes.',
+  'state.areas': 'Read farming, storage, trade, and other map areas with grids and specialized settings.',
+  'state.areaCatalog': 'Discover native area types accepted by game.createArea.',
+  'state.trade': 'Read sect relations, friend points, tendencies, and available school trade goods.',
+  'state.tradeWindow': 'Read the currently selected native trade offer values and friend-point cost.',
+  'state.worldMap': 'Read places, unlock/arrival state, travel costs, forecasts, and active explorations.',
+  'state.outspread': 'Read opened sect outspread regions: staff, buildings, policy, faith, population, storage, disaster, supervision, and travel.',
+  'state.outspreadCatalog': 'Discover outspread regions, open costs, buildings, policies, build skills, unlock state, and native conditions.',
+  'state.dlc': 'Read the official Panda/WuDang DLC installation state, display names, Lua flags, and installed content paths.',
+  'state.storyChoice': 'Read the current native story/adventure choice, option text, tips, NPC, and target grid.',
   'state.grid': 'Inspect an ACS map grid by key, x/y, or the current pointer: terrain, qi, five elements, temperature, fertility, beauty, light, and occupants.',
+  'state.qiField': 'Sample a bounded square around a grid and return native qi/five-element values, occupants, aggregate statistics, and the strongest cells.',
+  'state.fengShui': 'Read native building feng-shui ranks/values plus AreaRoom and AreaAura state, optionally around a selected grid.',
+  'state.population': 'Page all living NPCs, including visitors and animals, with native interaction eligibility.',
   'state.things': 'Search and page map objects by ACS thing type, name/definition query, and player ownership.',
   'state.resources': 'Read paged sect inventory counts plus usable food, medicine, and cultivation-food totals.',
   'state.school': 'Read sect name, level, prestige, feng shui, scores, disciples, unlocks, manuals, and daily schedule.',
@@ -40,6 +85,75 @@ const METHOD_HELP = {
   'game.setVipWork': 'Assign one NPC preferred work kind through JobNpcEngine.',
   'game.interruptNpcJob': 'Ask JobNpcEngine to interrupt the NPC current job when interruptible.',
   'game.setSchedule': 'Set one hour of the sect daily schedule through SchoolMgr.',
+  'game.setSchoolMaster': 'Assign an inner disciple as sect master through native SchoolMgr.SetMaster; requires confirm=true.',
+  'game.setPracticeMode': 'Set an NPC cultivation mode through NpcPractice.ChangeMode and return read-back state.',
+  'game.setPracticeBehaviour': 'Set an NPC current cultivation behaviour through NpcPractice.SetBehavourKind and return read-back state.',
+  'game.changeGong': 'Change an NPC cultivation art; requires explicit confirm=true.',
+  'game.promoteInnerDisciple': 'Use the native Up2Disciple workflow to promote a foundation-ready outer disciple and register them with SchoolMgr; requires confirm=true.',
+  'game.learnSkillTreeNode': 'Learn a node through the native Wnd_SkillTree validation and learning path; requires confirm=true.',
+  'game.beginBreakthrough': 'Begin a game-native breakthrough after preflight checks; requires explicit confirm=true.',
+  'game.useItem': 'Use a native item with an NPC, including manuals where supported; requires confirm=true.',
+  'game.equipItem': 'Equip a nearby or carried player item on one NPC and read back the equipment slots; requires confirm=true.',
+  'game.unequipItem': 'Remove one NPC equipment slot and read back inventory; requires confirm=true.',
+  'game.assignBed': 'Assign or clear one NPC bed through the native NPC setter and verify the assigned ID.',
+  'game.assignPracticePlace': 'Assign or clear one NPC cultivation place through the native NPC setter and verify the assigned ID.',
+  'game.huntAnimal': 'Queue the native Hunting command for an eligible animal; requires confirm=true.',
+  'game.slaughterAnimal': 'Queue the native Slaughter command for an eligible animal; requires confirm=true.',
+  'game.moveNpcTo': 'Queue the native MoveNpc command to have workers relocate a player NPC or animal to a target grid; requires confirm=true.',
+  'game.talkToNpc': 'Queue a native TryTalk command from a player NPC to a living intelligent NPC.',
+  'game.performTalkAction': 'Open the native Jianghu conversation and dispatch one currently available interaction action; requires confirm=true.',
+  'game.openGodCity': 'Open the original divine-city management window for a god-cultivator and return structured state.',
+  'game.createGodBuilding': 'Create a native divine-city building after native placement, condition, and cost checks; requires confirm=true.',
+  'game.upgradeGodBuilding': 'Upgrade a divine-city building after native level/resource checks; requires confirm=true.',
+  'game.removeGodBuilding': 'Remove a divine-city building through GodPractice; requires confirm=true.',
+  'game.toggleGodBuilding': 'Open or close a divine-city building and apply/remove its native effects.',
+  'game.setGodBuildingGuard': 'Assign or clear an available divine-city guard; requires confirm=true.',
+  'game.refineArtifact': 'Queue the native RefiningFabao command with a selected item, label and refining mode; requires confirm=true.',
+  'game.changeBodyAttitude': 'Switch an NPC to an unlocked body cultivation attitude.',
+  'game.beginBodyQuenching': 'Start native body part quenching with an unlocked method and available material; requires confirm=true.',
+  'game.cancelBodyQuenching': 'Cancel active quenching for a named body part.',
+  'game.attackTarget': 'Set a native FightBody target and begin combat.',
+  'game.stopCombat': 'Interrupt and end combat, refusing cant-stop fights unless force=true.',
+  'game.castSkill': 'Cast a known native fight skill at a thing or grid and return combat read-back.',
+  'game.setAutoSkills': 'Replace one NPC native automatic fight-skill list after validating known skills.',
+  'game.castArtifacts': 'Cast an NPC equipped artifacts in a native artifact mode, optionally at a target.',
+  'game.beginBuild': 'Enter the original native Build UI logic mode by an exact build-catalog name.',
+  'game.placeBuilding': 'Enter native Build mode and dispatch a map placement at a grid with immediate read-back.',
+  'game.moveBuilding': 'Enter the native move-building path for a finished building and place its destination blueprint; requires confirm=true.',
+  'game.changeBuildingMaterial': 'Queue the native building material replacement job; requires confirm=true.',
+  'game.dismantleBuilding': 'Queue the native dismantle command for a building; requires confirm=true.',
+  'game.addProductionTask': 'Add a native recipe/task to a building production queue.',
+  'game.removeProductionTask': 'Remove a production task by ID; requires confirm=true.',
+  'game.createFormation': 'Create a native formation from a legal shape and ordered NPC IDs; requires confirm=true.',
+  'game.cancelFormation': 'Cancel an active native formation; requires confirm=true.',
+  'game.createFormationShape': 'Create and native-validate a custom formation shape from unlocked node definitions; requires confirm=true.',
+  'game.removeFormationShape': 'Remove an unused custom formation shape; requires confirm=true.',
+  'game.saveFormationScheme': 'Save an ordered NPC assignment for a legal formation shape; requires confirm=true.',
+  'game.removeFormationScheme': 'Remove a saved formation member scheme; requires confirm=true.',
+  'game.apprentice': 'Establish a native master-disciple relationship; requires confirm=true.',
+  'game.teachSecret': 'Queue the native TeachHim command for a known manual/esoterica; requires confirm=true.',
+  'game.createArea': 'Create a native farming/storage/etc. area at a map grid.',
+  'game.addAreaGrid': 'Add one grid to an existing native area.',
+  'game.removeAreaGrid': 'Remove one grid from an existing native area.',
+  'game.configurePlantArea': 'Set a farming area crop and outer/inner-disciple restriction.',
+  'game.configureStorageArea': 'Set storage priority, sale policy, item-rate range, and special filters.',
+  'game.configureGuardArea': 'Configure a native guard area and add/remove assigned player NPC guards.',
+  'game.removeArea': 'Remove an entire native area; requires confirm=true.',
+  'game.openSchoolTrade': 'Open the native trade window for a school; use ui.snapshot/ui.input to finalize offers.',
+  'game.confirmTrade': 'Finalize the currently selected native trade offer; requires confirm=true.',
+  'game.openWorldMap': 'Open the native world-map window.',
+  'game.startExplore': 'Queue the native GoMapExplore command for an unlocked place; requires confirm=true.',
+  'game.recallExplorer': 'Recall an NPC from exploration through PlacesMgr; requires confirm=true.',
+  'game.chooseStoryOption': 'Choose a current native story/adventure option by index; requires confirm=true.',
+  'game.openOutspreadRegion': 'Dispatch an available NPC to open a native outspread region; requires confirm=true.',
+  'game.setOutspreadPolicy': 'Set or clear a region policy after native unlock/condition checks; requires confirm=true.',
+  'game.setOutspreadBuild': 'Build, replace, or remove one region building slot through native SetBuild; requires confirm=true.',
+  'game.cancelOutspreadBuild': 'Cancel one waiting outspread construction; requires confirm=true.',
+  'game.setOutspreadChief': 'Dispatch an available NPC to become a region chief; requires confirm=true.',
+  'game.sendOutspreadMember': 'Dispatch an available NPC to join a region after capacity validation; requires confirm=true.',
+  'game.removeOutspreadMember': 'Remove a region member through the original manager path; requires confirm=true.',
+  'game.startOutspreadSupervision': 'Start regional supervision after native eligibility checks; requires confirm=true.',
+  'game.collectOutspreadProducts': 'Move stored outspread products back to the player map; requires confirm=true.',
   'game.selectCommand': 'Enter an original Wnd_GameMain command-selection mode by command name.',
   'game.addThingCommand': 'Add a native ACS command to a map object by ID and return read-back evidence.',
   'game.addGridCommand': 'Add a native ACS command at a map grid and return read-back evidence.',
@@ -62,12 +176,13 @@ const METHOD_HELP = {
   'ui.key': 'Press a named key, optionally with Ctrl/Alt/Shift.',
   'ui.type': 'Type Unicode text using Win32 input events.',
   'runtime.wait': 'Wait briefly before the next observation.',
+  ...HELPER_HELP,
 };
 
 export const TOOLS = [
   {
     name: 'acsmcp_call',
-    description: 'Observe and operate Amazing Cultivation Simulator through its real visible Windows UI. Start with session.status and ui.observe. Coordinates are relative to the game client area. Re-observe after every action that can change the screen.',
+    description: 'Observe and operate Amazing Cultivation Simulator through structured game state, verified high-level helpers, native UI, and fallback Windows input. Start with helper.observe or helper.startingPlan.',
     inputSchema: {
       type: 'object',
       additionalProperties: false,
@@ -93,7 +208,7 @@ export const TOOLS = [
 const PLAY_GUIDE = {
   loop: [
     'Call session.status; if disconnected, start the runtime/game and ensure the Mod is enabled.',
-    'Call state.overview before deciding. Inspect state.alerts and low NPC needs first.',
+    'Call helper.observe or helper.startingPlan before deciding; use state.overview for the lower-level bounded snapshot. Inspect alerts and low NPC needs first.',
     'Use state.enums before passing workKind, plan, or thing type names.',
     'Prefer game.* and ui.snapshot/ui.input. Use coordinate input only when no semantic adapter exists.',
     'For multi-step UI or build flows, acquire session.sequence.begin and pass sequenceId to every mutation, then release it.',
@@ -101,8 +216,38 @@ const PLAY_GUIDE = {
     'Save to a new explicit name before a risky multi-step operation.',
   ],
   recipes: {
-    inspectNpc: [{ method: 'state.npcs', args: { limit: 30 } }, { method: 'state.npc', args: { id: '<npcId>' } }],
+    inspectColony: [{ method: 'helper.observe', args: {} }, { method: 'helper.startingPlan', args: {} }],
+    configureWork: [{ method: 'helper.ensureWork', args: { id: '<npcId>', workKind: 'Plant', priority: 3, enabled: true } }],
+    configureSchedule: [{ method: 'helper.ensureSchedule', args: { entries: [{ hour: 0, plan: '<plan>' }] } }],
+    configureCultivation: [{ method: 'state.enums', args: {} }, { method: 'helper.ensureCultivation', args: { id: '<npcId>', mode: '<practiceBehaviour>', behaviour: '<practiceBehaviour>' } }],
+    learnCultivationNode: [{ method: 'state.skillTree', args: { id: '<npcId>' } }, { method: 'game.learnSkillTreeNode', args: { id: '<npcId>', name: '<nodeWithCanLearnTrue>', confirm: true } }, { method: 'state.spellCatalog', args: { npcId: '<npcId>' } }],
+    build: [{ method: 'state.buildCatalog', args: { query: '<building>' } }, { method: 'helper.buildLayout', args: { placements: [{ name: '<catalogName>', x: '<x>', y: '<y>', stuffDefName: '<material>', direction: '<direction>' }] } }],
+    reusableLayout: [{ method: 'helper.saveLayoutTemplate', args: { name: '<templateName>', placements: [{ name: '<catalogName>', x: 10, y: 10 }, { name: '<catalogName>', x: 11, y: 10 }] } }, { method: 'helper.buildLayoutTemplate', args: { name: '<templateName>', x: '<newOriginX>', y: '<newOriginY>', rotation: 0 } }],
+    moveOrRemoveBuilding: [{ method: 'state.building', args: { id: '<buildingId>' } }, { method: 'game.moveBuilding', args: { id: '<buildingId>', x: '<x>', y: '<y>', confirm: true } }, { method: 'helper.dismantleAndVerify', args: { id: '<buildingId>', confirm: true } }],
+    production: [{ method: 'state.building', args: { id: '<buildingId>' } }, { method: 'helper.ensureProduction', args: { id: '<buildingId>', name: '<recipeName>', loop: 1 } }],
+    alchemyAndRefining: [{ method: 'state.recipes', args: { npcId: '<npcId>', kind: 'all' } }, { method: 'state.productionCatalog', args: { id: '<buildingId>' } }, { method: 'helper.ensureProduction', args: { id: '<buildingId>', name: '<recipeName>', loop: 1 } }],
+    formation: [{ method: 'state.formationCatalog', args: {} }, { method: 'game.createFormation', args: { shapeId: '<shapeId>', npcIds: ['<npcId>'], confirm: true } }, { method: 'state.formations', args: {} }],
+    formationCombat: [{ method: 'helper.commandFormationCombat', args: { formationId: '<formationId>', targetIds: ['<enemyId>'], policy: 'focus-fire' } }, { method: 'helper.retreatTo', args: { npcIds: ['<memberId>'], x: '<safeX>', y: '<safeY>' } }],
+    authorFormation: [{ method: 'state.formationCatalog', args: {} }, { method: 'game.createFormationShape', args: { name: '<name>', nodes: [{ name: '<nodeDefinition>', x: 0, y: 0, rotation: 0 }], confirm: true } }, { method: 'game.saveFormationScheme', args: { shapeId: '<shapeId>', npcIds: ['<npcId>'], confirm: true } }],
+    mentorship: [{ method: 'state.npcCultivation', args: { id: '<teacherId>' } }, { method: 'game.apprentice', args: { studentId: '<studentId>', masterId: '<teacherId>', confirm: true } }, { method: 'game.teachSecret', args: { teacherId: '<teacherId>', studentId: '<studentId>', secret: '<secretId>', confirm: true } }],
+    farmingAndStorage: [{ method: 'state.areaCatalog', args: {} }, { method: 'game.createArea', args: { type: '<Plant-or-Storage-type>', x: '<x>', y: '<y>' } }, { method: 'game.configurePlantArea', args: { id: '<areaId>', crop: '<plantDefName>' } }, { method: 'state.areas', args: {} }],
+    trade: [{ method: 'state.trade', args: {} }, { method: 'game.openSchoolTrade', args: { schoolId: '<schoolId>' } }, { method: 'ui.snapshot', args: { limit: 3000 } }, { method: 'ui.input', args: { targetId: '<freshTargetId>', action: 'click' } }, { method: 'state.tradeWindow', args: {} }, { method: 'game.confirmTrade', args: { confirm: true } }],
+    exploration: [{ method: 'state.worldMap', args: {} }, { method: 'game.startExplore', args: { id: '<npcId>', place: '<placeName>', stay: false, confirm: true } }, { method: 'state.storyChoice', args: {} }, { method: 'game.chooseStoryOption', args: { index: '<optionIndex>', confirm: true } }],
+    outspread: [{ method: 'state.outspread', args: {} }, { method: 'state.outspreadCatalog', args: { region: '<openedRegionName>' } }, { method: 'game.setOutspreadPolicy', args: { region: '<regionName>', name: '<availablePolicy>', confirm: true } }, { method: 'game.setOutspreadBuild', args: { region: '<regionName>', type: 'Region', index: 0, name: '<availableBuild>', confirm: true } }],
+    outspreadStaff: [{ method: 'state.outspread', args: { name: '<regionName>' } }, { method: 'game.setOutspreadChief', args: { region: '<regionName>', npcId: '<npcId>', confirm: true } }, { method: 'game.sendOutspreadMember', args: { region: '<regionName>', npcId: '<npcId>', confirm: true } }],
+    combat: [{ method: 'state.combat', args: { id: '<attackerId>' } }, { method: 'helper.engageCombat', args: { attackerId: '<attackerId>', targetId: '<targetId>' } }, { method: 'game.castSkill', args: { id: '<attackerId>', skill: '<skillName>', targetId: '<targetId>' } }],
+    emergencyDisengage: [{ method: 'helper.emergencyDisengage', args: { npcIds: ['<npcId>'], force: false } }],
+    breakthrough: [{ method: 'helper.prepareBreakthrough', args: { id: '<npcId>', minimumRate: 0.9 } }, { method: 'helper.prepareBreakthrough', args: { id: '<npcId>', minimumRate: 0.9, begin: true, confirm: true } }],
+    artifactRefining: [{ method: 'state.item', args: { id: '<itemId>' } }, { method: 'helper.refineAndTrack', args: { npcId: '<npcId>', itemId: '<itemId>', kind: '<itemLabel>', refiningType: 0 } }],
+    visitorInteraction: [{ method: 'state.interactions', args: { actorId: '<playerNpcId>', targetId: '<visitorNpcId>' } }, { method: 'game.performTalkAction', args: { actorId: '<playerNpcId>', targetId: '<visitorNpcId>', action: '<availableAction>', confirm: true } }],
+    godCultivation: [{ method: 'state.godCultivation', args: { id: '<npcId>' } }, { method: 'state.godBuildingCatalog', args: { id: '<npcId>' } }, { method: 'game.createGodBuilding', args: { id: '<npcId>', name: '<unlockedBuilding>', cellId: '<cellId>', confirm: true } }, { method: 'state.godCultivation', args: { id: '<npcId>' } }],
+    animalBreeding: [{ method: 'state.areas', args: {} }, { method: 'helper.moveAnimalsToBreedingArea', args: { areaId: '<breedingAreaId>', npcIds: ['<animalNpcId>'], waitForArrival: true } }, { method: 'state.npc', args: { id: '<animalNpcId>' } }],
+    ensureDesignation: [{ method: 'helper.ensureThingCommand', args: { command: 'Cutoff', id: '<thingId>' } }],
+    supervisedRun: [{ method: 'helper.runAndWatch', args: { conditions: [{ method: 'state.world', path: 'dayHour', operator: 'gte', value: 12 }], timeoutMs: 30000 } }],
+    inspectNpc: [{ method: 'state.npcs', args: { limit: 30 } }, { method: 'state.npcProfile', args: { id: '<npcId>' } }, { method: 'state.npcCultivation', args: { id: '<npcId>' } }, { method: 'state.npcSkills', args: { id: '<npcId>' } }, { method: 'state.npcHealth', args: { id: '<npcId>' } }, { method: 'state.npcInventory', args: { id: '<npcId>' } }],
     inspectGrid: [{ method: 'state.grid', args: { x: '<x>', y: '<y>' } }],
+    spiritGathering: [{ method: 'helper.planSpiritGathering', args: { x: '<seatX>', y: '<seatY>', radius: 6, element: '<optional target element>' } }, { method: 'state.buildCatalog', args: { query: '聚灵' } }, { method: 'helper.placeBuilding', args: { name: '<verified catalog name>', x: '<planned x>', y: '<planned y>' } }, { method: 'state.qiField', args: { x: '<seatX>', y: '<seatY>', radius: 6 } }],
+    ominousRoom: [{ method: 'helper.planOminousRoom', args: { x: '<room center x>', y: '<room center y>', radius: 8 } }, { method: 'state.fengShui', args: { x: '<room center x>', y: '<room center y>', radius: 8 } }],
     findObjects: [{ method: 'state.things', args: { type: 'Building', query: '', playerOnly: true, limit: 100 } }],
     designateObject: [{ method: 'state.commandTypes', args: { query: 'Cutoff' } }, { method: 'game.addThingCommand', args: { command: 'CommandCutoff', id: '<thingId>', params: [] } }, { method: 'state.commands', args: { type: 'CommandCutoff' } }],
     designateGrid: [{ method: 'state.commandTypes', args: { query: 'RemoveFloor' } }, { method: 'game.addGridCommand', args: { command: 'CommandRemoveFloor', x: '<x>', y: '<y>', params: [] } }],
@@ -193,10 +338,13 @@ async function advanceRuntime(args, deps) {
 }
 
 async function callMethod(method, args, deps) {
+  if (method.startsWith('helper.')) return { content: [textContent(await runHelper(method, args, deps))] };
   switch (method) {
     case 'session.status': {
       try {
-        return { content: [textContent(await deps.runtimeCall(method, args))] };
+        const response = await deps.runtimeCall(method, args);
+        if (response?.success && Array.isArray(response.data?.methods)) response.data.methods = [...new Set([...response.data.methods, ...STATUS_METHOD_ADDITIONS])];
+        return { content: [textContent(response)] };
       } catch (error) {
         const window = await deps.runWindows('status');
         return { content: [textContent({ success: true, data: { bridge: 'disconnected', window, transportError: error.message } })] };
@@ -220,7 +368,41 @@ async function callMethod(method, args, deps) {
     case 'state.map':
     case 'state.npcs':
     case 'state.npc':
+    case 'state.npcProfile':
+    case 'state.npcCultivation':
+    case 'state.breakthrough':
+    case 'state.bodyCultivation':
+    case 'state.esotericaCatalog':
+    case 'state.spellCatalog':
+    case 'state.skillTree':
+    case 'state.godCultivation':
+    case 'state.godBuildingCatalog':
+    case 'state.interactions':
+    case 'state.npcSkills':
+    case 'state.npcHealth':
+    case 'state.npcInventory':
+    case 'state.item':
+    case 'state.refiningForecast':
+    case 'state.combat':
+    case 'state.buildCatalog':
+    case 'state.building':
+    case 'state.productionCatalog':
+    case 'state.recipes':
+    case 'state.formations':
+    case 'state.formationCatalog':
+    case 'state.areas':
+    case 'state.areaCatalog':
+    case 'state.trade':
+    case 'state.tradeWindow':
+    case 'state.worldMap':
+    case 'state.outspread':
+    case 'state.outspreadCatalog':
+    case 'state.dlc':
+    case 'state.storyChoice':
     case 'state.grid':
+    case 'state.qiField':
+    case 'state.fengShui':
+    case 'state.population':
     case 'state.things':
     case 'state.resources':
     case 'state.school':
@@ -240,6 +422,75 @@ async function callMethod(method, args, deps) {
     case 'game.setVipWork':
     case 'game.interruptNpcJob':
     case 'game.setSchedule':
+    case 'game.setSchoolMaster':
+    case 'game.setPracticeMode':
+    case 'game.setPracticeBehaviour':
+    case 'game.changeGong':
+    case 'game.promoteInnerDisciple':
+    case 'game.learnSkillTreeNode':
+    case 'game.beginBreakthrough':
+    case 'game.useItem':
+    case 'game.equipItem':
+    case 'game.unequipItem':
+    case 'game.assignBed':
+    case 'game.assignPracticePlace':
+    case 'game.huntAnimal':
+    case 'game.slaughterAnimal':
+    case 'game.moveNpcTo':
+    case 'game.talkToNpc':
+    case 'game.performTalkAction':
+    case 'game.openGodCity':
+    case 'game.createGodBuilding':
+    case 'game.upgradeGodBuilding':
+    case 'game.removeGodBuilding':
+    case 'game.toggleGodBuilding':
+    case 'game.setGodBuildingGuard':
+    case 'game.refineArtifact':
+    case 'game.changeBodyAttitude':
+    case 'game.beginBodyQuenching':
+    case 'game.cancelBodyQuenching':
+    case 'game.attackTarget':
+    case 'game.stopCombat':
+    case 'game.castSkill':
+    case 'game.setAutoSkills':
+    case 'game.castArtifacts':
+    case 'game.beginBuild':
+    case 'game.placeBuilding':
+    case 'game.moveBuilding':
+    case 'game.changeBuildingMaterial':
+    case 'game.dismantleBuilding':
+    case 'game.addProductionTask':
+    case 'game.removeProductionTask':
+    case 'game.createFormation':
+    case 'game.cancelFormation':
+    case 'game.createFormationShape':
+    case 'game.removeFormationShape':
+    case 'game.saveFormationScheme':
+    case 'game.removeFormationScheme':
+    case 'game.apprentice':
+    case 'game.teachSecret':
+    case 'game.createArea':
+    case 'game.addAreaGrid':
+    case 'game.removeAreaGrid':
+    case 'game.configurePlantArea':
+    case 'game.configureStorageArea':
+    case 'game.configureGuardArea':
+    case 'game.removeArea':
+    case 'game.openSchoolTrade':
+    case 'game.confirmTrade':
+    case 'game.openWorldMap':
+    case 'game.startExplore':
+    case 'game.recallExplorer':
+    case 'game.chooseStoryOption':
+    case 'game.openOutspreadRegion':
+    case 'game.setOutspreadPolicy':
+    case 'game.setOutspreadBuild':
+    case 'game.cancelOutspreadBuild':
+    case 'game.setOutspreadChief':
+    case 'game.sendOutspreadMember':
+    case 'game.removeOutspreadMember':
+    case 'game.startOutspreadSupervision':
+    case 'game.collectOutspreadProducts':
     case 'game.selectCommand':
     case 'game.addThingCommand':
     case 'game.addGridCommand':
@@ -319,6 +570,7 @@ export function createHandler(overrides = {}) {
     runWindows,
     captureWindow,
     runtimeCall,
+    layoutTemplates,
     wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     ...overrides,
   };

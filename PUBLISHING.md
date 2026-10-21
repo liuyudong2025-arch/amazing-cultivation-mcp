@@ -40,6 +40,6 @@ node .\scripts\live-core-test.mjs
 
 ## 建议的首个版本
 
-- Git 标签：`v0.5.0`
+- Git 标签：`v1.0.2`
 - GitHub Release：附上仓库中的 `mod/AmazingCultivationMCP` 目录或其 ZIP。
 - Steam 创意工坊更新：继续使用已有项目 ID `3823265890`，不要新建作品。

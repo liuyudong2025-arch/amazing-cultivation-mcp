@@ -23,6 +23,7 @@ internal static class AssemblyInspector
         string input = Path.GetFullPath(args[0]);
         directory = Path.GetDirectoryName(input);
         Regex filter = new Regex(args[1], RegexOptions.IgnoreCase);
+        bool namesOnly = args.Length > 2 && args[2] == "--names";
         AppDomain.CurrentDomain.ReflectionOnlyAssemblyResolve += Resolve;
         Assembly assembly = Assembly.ReflectionOnlyLoadFrom(input);
         Type[] types;
@@ -31,6 +32,7 @@ internal static class AssemblyInspector
         foreach (Type type in types) {
             if (type == null || !filter.IsMatch(type.FullName)) continue;
             Console.WriteLine("TYPE " + type.FullName + " : " + (type.BaseType == null ? "" : type.BaseType.FullName));
+            if (namesOnly) continue;
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
             foreach (FieldInfo field in type.GetFields(flags))
                 Console.WriteLine("  FIELD " + field.FieldType.FullName + " " + field.Name);

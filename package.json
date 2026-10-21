@@ -1,6 +1,6 @@
 {
   "name": "amazing-cultivation-mcp",
-  "version": "0.5.0",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "MCP server for visually observing and controlling Amazing Cultivation Simulator on Windows.",
@@ -9,7 +9,11 @@
     "start": "node src/server.mjs",
     "runtime": "node src/runtime.mjs",
     "test": "node --test tests/*.test.mjs",
-    "smoke": "node scripts/smoke-test.mjs"
+    "smoke": "node scripts/smoke-test.mjs",
+    "live": "node scripts/live-core-test.mjs",
+    "live:helpers": "node scripts/live-helper-test.mjs",
+    "live:advanced": "node scripts/live-advanced-test.mjs",
+    "live:features": "node scripts/live-feature-test.mjs"
   },
   "engines": {
     "node": ">=20"

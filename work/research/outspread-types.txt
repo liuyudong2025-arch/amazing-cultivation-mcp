@@ -1,0 +1,442 @@
+﻿TYPE XiaWorld.OutspreadMgr : IManagerModule_LoopInterval`1[[XiaWorld.OutspreadMgr, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null]]
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadRegionDef> m_RegionDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadPolicyDef> m_PolicyDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadPointDef> m_PointDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadDisasterDef> m_DisasterDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadProductDef> m_ProductDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadLandformDef> m_LandformDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadBuildTypeDef> m_BuildTypeDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadBuildDef> m_BuildDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadBuildSkillDef> m_BuildSkillDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadDisasterTriggerDef> m_DisasterTriggerDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadPolicyStoryDef> m_PolicyStoryDef
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadGoDef> m_GoDef
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> m_PlaceSchool
+  FIELD System.Int32 CanUseRegionDefCount
+  FIELD System.Int32 WonderBuildCount
+  FIELD System.Collections.Generic.Dictionary<System.Int32,XiaWorld.WorldRegionInfo> m_WorldRegionInfo
+  FIELD System.Collections.Generic.Dictionary<System.String,System.String> place2region
+  FIELD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadMgr+PlacePointInfo> place2point
+  FIELD System.Collections.Generic.List<System.String> _basePolicies
+  FIELD System.Collections.Generic.List<System.String> _baseBuilds
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> DisasterTriggerCount
+  FIELD XiaWorld.SaveLoad.SL_Outspread slData
+  FIELD System.Single[] waitSec
+  FIELD System.Single[] checkary
+  FIELD System.Boolean[] aryCanUpdate
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> GlobalBuildCount
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> GlobalWaitBuildCount
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> GlobalStorage
+  FIELD System.Collections.Generic.Dictionary<System.Int32,System.Single> NpcFaithPerDayCache
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> PolicyCount
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> prevPolicyCount
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Object> luaGs
+  FIELD System.String prevSpecFocusPolicy
+  FIELD System.Single specFocusCostScale
+  FIELD System.Single specFocusInterval
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Single> PolicyInterval
+  FIELD System.Boolean updatePolicy
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> DisasterTimeCheckCache
+  FIELD System.Int32 MinStability
+  FIELD System.Int32 MaxStability
+  FIELD System.Boolean _DEBUG
+  FIELD System.Func<XiaWorld.OutspreadPolicyDef,System.Boolean> <>f__am$cache0
+  FIELD System.Func<XiaWorld.OutspreadBuildDef,System.Boolean> <>f__am$cache1
+  FIELD System.Func<XiaWorld.OutspreadPolicyStory,System.Single> <>f__am$cache2
+  FIELD System.Func<XiaWorld.Npc,System.Boolean> <>f__am$cache3
+  FIELD System.String Statue
+  FIELD System.Int32 MinAttractive
+  FIELD System.Int32 MaxAttractive
+  FIELD System.Int32 MemFiveBaseCount
+  FIELD System.Int32 MemSkillCount
+  FIELD System.Int32 MSG_STORAGE_FULL
+  FIELD System.Int32 MSG_FAITH_FULL
+  FIELD System.Int32 MSG_NOPOLICY
+  PROPERTY System.Boolean NoRPG
+  PROPERTY System.Boolean DEBUG
+  PROPERTY System.Single LoopInterval
+  PROPERTY System.Boolean NoFightMap
+  PROPERTY System.Int32 PolicyCostInterval
+  PROPERTY System.Collections.Generic.List<System.String> basePolicies
+  PROPERTY System.Collections.Generic.List<System.String> baseBuilds
+  PROPERTY System.Single Build_Mat_Need_Scale
+  PROPERTY System.Single Policy_Cost_Scale
+  PROPERTY System.Single Policy_Interval_Scale
+  PROPERTY System.Collections.Generic.Dictionary<System.String,System.Int32> LastSolveWay
+  PROPERTY System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadMgr+Region> Regions
+  PROPERTY System.Collections.Generic.Dictionary<System.String,System.Int32> GlobalBuildUnlock
+  PROPERTY System.Collections.Generic.Dictionary<System.String,System.Int32> GlobalPolicyUnlock
+  PROPERTY System.String SpecialFocus
+  PROPERTY System.Int32 Influence
+  PROPERTY XiaWorld.ThingStep.DayCheck TDisasterDCheck
+  PROPERTY System.Collections.Generic.List<XiaWorld.OutspreadMgr+MovingMember> Moving
+  PROPERTY System.Single BuildCostReducep
+  PROPERTY System.Single PopulationAddp
+  PROPERTY System.Int32 GodCityAdd
+  PROPERTY System.Int32 KnowLike
+  METHOD System.Void PolicyUpdateWithoutRegion(System.Double now, System.Int32 day)
+  METHOD System.Void PolicyUpdate(XiaWorld.OutspreadMgr+Region region, System.Double now, System.Int32 day)
+  METHOD System.Void AddGodCityCount(System.Int32 add)
+  METHOD System.Void GiveFreePuppet(System.Int32 count)
+  METHOD System.Void DisasterTriggerUpdate(System.Single dt)
+  METHOD System.Boolean CheckTime(System.Int32 day2check, System.Int32 startday, System.Int32 stopday)
+  METHOD System.Void DisasterUpdate(XiaWorld.OutspreadMgr+Region region, System.Double now, System.Int32 day)
+  METHOD System.Void StopDisaster(XiaWorld.OutspreadMgr+Region region, System.Boolean solve)
+  METHOD System.Void StartDisaster4Teach(XiaWorld.OutspreadMgr+Region region, System.String disaster, System.String T)
+  METHOD System.Void StartDisaster(XiaWorld.OutspreadMgr+Region region, System.String disaster, System.String T)
+  METHOD System.Void AddDisasterAid(XiaWorld.OutspreadMgr+Region region, System.Int32 aid, System.Int32 fromSchool)
+  METHOD System.Void SubDisasterNeed(XiaWorld.OutspreadMgr+Region region, System.Int32 sub)
+  METHOD System.String GetNpcDisasterStory(XiaWorld.OutspreadMgr+Region region, XiaWorld.Npc npc)
+  METHOD System.Collections.Generic.List<System.String> GetRegionStory(XiaWorld.OutspreadMgr+Region region, XiaWorld.Npc npc)
+  METHOD System.Void OpenupRegion(System.String regionname)
+  METHOD System.Void PreOpenRegion(System.String regionname)
+  METHOD System.Void SetWaitPM(XiaWorld.OutspreadMgr+Region region, XiaWorld.Npc npc)
+  METHOD System.Void SetRegionPM(XiaWorld.OutspreadMgr+Region region, XiaWorld.Npc npc)
+  METHOD System.Void SetRegionDisplayName(XiaWorld.OutspreadMgr+Region region, System.String prefix, System.String suffix)
+  METHOD System.Boolean AddMember(XiaWorld.OutspreadMgr+Region region, XiaWorld.Npc npc)
+  METHOD System.Void RemoveMember(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadMgr+Region+Member member)
+  METHOD System.Int32 OutsBuildType2Key(XiaWorld.OutsBuildType outsType, System.Int32 idx)
+  METHOD System.Boolean CanUseBuildSkill(XiaWorld.OutspreadMgr+Region region, System.String buildSkill, XiaWorld.OutsBuildType outsType, System.Int32 idx)
+  METHOD System.Boolean CheckBuildSkillCD(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadBuildSkillDef def, XiaWorld.OutsBuildType outsType, System.Int32 idx)
+  METHOD System.Void UseBuildSkill(XiaWorld.OutspreadMgr+Region region, System.String buildSkill, XiaWorld.OutsBuildType outsType, System.Int32 idx)
+  METHOD System.Void SuperviseUpdate(XiaWorld.OutspreadMgr+Region region, System.Double now, System.Int32 day)
+  METHOD System.Boolean IsPopulationEnough(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Boolean CanSupervise(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void StartSupervise(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void Supervise(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void SuperviseFail(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void SchoolSubmission(System.Int32 school)
+  METHOD System.Void TestStart(System.String name)
+  METHOD System.Void Td(System.Boolean solve, System.String region, System.String d)
+  METHOD System.Void TestSetBuild(System.Int32 type, System.Int32 idx, System.String build)
+  METHOD System.Void TestGetOuts()
+  METHOD XiaWorld.OutspreadCost GetOpenUpCost(System.String regionname)
+  METHOD System.String GetRegionNameByPlace(System.String place)
+  METHOD XiaWorld.OutspreadMgr+PlacePointInfo GetPointByPlace(System.String place)
+  METHOD System.Void ResetRegion(System.String regionName)
+  METHOD XiaWorld.OutspreadMgr+Region GetRegion(System.String regionName)
+  METHOD System.Void DebugOpenUp(XiaWorld.Npc npc, System.String region)
+  METHOD System.Void SetNpcToOpenRegion(XiaWorld.Npc npc, System.String region, System.Int32 ResourceLevel)
+  METHOD System.Void ChangeRegionPM(XiaWorld.Npc npc, System.String region)
+  METHOD System.Void DebugSendbackPM(System.String regionname)
+  METHOD System.Void SendNpcBack(XiaWorld.Npc pm, System.String from, System.String desc)
+  METHOD System.Void SendZhaolanNpcBack(XiaWorld.Npc npc, System.String from)
+  METHOD System.Void CancelWaitPM(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void CancelPMJob(XiaWorld.Npc pm)
+  METHOD System.Void SendMember(XiaWorld.Npc npc, System.String regionname)
+  METHOD System.Void GetSIDictKey(System.Collections.Generic.List<System.String> rs, System.Collections.Generic.Dictionary<System.String,System.Int32> global, System.Collections.Generic.Dictionary<System.String,System.Int32> mayNull, System.Collections.Generic.List<System.String> basekeys)
+  METHOD System.Boolean CheckPolicyCondition(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadPolicyDef pdef)
+  METHOD System.Void GetUnlockPolicy(XiaWorld.OutspreadMgr+Region region, System.Collections.Generic.List<System.String> policies)
+  METHOD System.Void GetUnlockBuild(XiaWorld.OutspreadMgr+Region region, System.Collections.Generic.List<System.String> builds)
+  METHOD System.Void GetUnlockBuild(XiaWorld.OutspreadMgr+Region region, System.Collections.Generic.List<System.String> builds, XiaWorld.OutsBuildType t, System.Int32 idx)
+  METHOD System.Int32 GetComingMemberCount(System.String region)
+  METHOD System.String GetPlaceBuild(System.String place)
+  METHOD System.Int32 GetPlaceSchoolInDef(System.String place)
+  METHOD System.Int32 GetPlaceSchool(System.String place)
+  METHOD System.Void SetRegionBaseProductIncrease(XiaWorld.OutspreadMgr+Region region, System.Single scale, System.Single duration)
+  METHOD System.Void SetFaithNpcRegion(XiaWorld.Npc npc, System.Single scale, System.Single duration)
+  METHOD System.Void MovingUpdate(System.Single dt)
+  METHOD System.Void MoveFindNpcTo(XiaWorld.Npc npc, System.String from, System.String to)
+  METHOD System.Single GetCost(XiaWorld.Npc npc, System.String regionname1, System.String regionname2)
+  METHOD System.Single GetCost(XiaWorld.Npc npc, XiaWorld.OutspreadRegionDef def1, XiaWorld.OutspreadRegionDef def2)
+  METHOD System.Void Init()
+  METHOD System.Void Destroy()
+  METHOD System.Void CheckRegionAchievement(XiaWorld.Thing sender, System.Object[] obs)
+  METHOD System.Void CheckRegionAndSubmissAchievement()
+  METHOD System.Void CheckMinRegionLv()
+  METHOD System.Collections.Generic.List<System.String> GetOpenRegions()
+  METHOD System.Boolean <get_basePolicies>m__0(XiaWorld.OutspreadPolicyDef def)
+  METHOD System.Boolean <get_baseBuilds>m__1(XiaWorld.OutspreadBuildDef def)
+  METHOD System.Single <TriggerPolicy>m__2(XiaWorld.OutspreadPolicyStory s)
+  METHOD System.Boolean <GetComingMemberCount>m__3(XiaWorld.Npc npc)
+  METHOD System.Boolean get_NoRPG()
+  METHOD System.Boolean get_DEBUG()
+  METHOD System.Void set_DEBUG(System.Boolean value)
+  METHOD System.Single get_LoopInterval()
+  METHOD System.Boolean get_NoFightMap()
+  METHOD System.Int32 get_PolicyCostInterval()
+  METHOD System.Collections.Generic.List<System.String> get_basePolicies()
+  METHOD System.Collections.Generic.List<System.String> get_baseBuilds()
+  METHOD System.Void LoadSetting()
+  METHOD System.Void CheckSetting()
+  METHOD System.Single get_Build_Mat_Need_Scale()
+  METHOD System.Single get_Policy_Cost_Scale()
+  METHOD System.Single get_Policy_Interval_Scale()
+  METHOD System.Collections.Generic.List<System.String> GetAllRegionName()
+  METHOD XiaWorld.OutspreadRegionDef GetRegionDef(System.String k)
+  METHOD XiaWorld.OutspreadPolicyDef GetPolicyDef(System.String k)
+  METHOD XiaWorld.OutspreadPointDef GetPointDef(System.String k)
+  METHOD XiaWorld.OutspreadDisasterDef GetDisasterDef(System.String k)
+  METHOD XiaWorld.OutspreadProductDef GetProductDef(System.String k)
+  METHOD XiaWorld.OutspreadLandformDef GetLandformDef(System.String k)
+  METHOD XiaWorld.OutspreadBuildTypeDef GetBuildTypeDef(System.String k)
+  METHOD XiaWorld.OutspreadBuildDef GetBuildDef(System.String k)
+  METHOD XiaWorld.OutspreadBuildSkillDef GetBuildSkillDef(System.String k)
+  METHOD XiaWorld.OutspreadPolicyStoryDef GetPolicyStoryDef(System.String k)
+  METHOD XiaWorld.OutspreadGoDef GetGoDef(System.String k)
+  METHOD XiaWorld.WorldRegionInfo GetWorldRegionInfo(System.Int32 part)
+  METHOD System.Collections.Generic.Dictionary<System.String,System.Int32> get_LastSolveWay()
+  METHOD System.Void set_LastSolveWay(System.Collections.Generic.Dictionary<System.String,System.Int32> value)
+  METHOD System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadMgr+Region> get_Regions()
+  METHOD System.Void set_Regions(System.Collections.Generic.Dictionary<System.String,XiaWorld.OutspreadMgr+Region> value)
+  METHOD System.Collections.Generic.Dictionary<System.String,System.Int32> get_GlobalBuildUnlock()
+  METHOD System.Void set_GlobalBuildUnlock(System.Collections.Generic.Dictionary<System.String,System.Int32> value)
+  METHOD System.Collections.Generic.Dictionary<System.String,System.Int32> get_GlobalPolicyUnlock()
+  METHOD System.Void set_GlobalPolicyUnlock(System.Collections.Generic.Dictionary<System.String,System.Int32> value)
+  METHOD System.String get_SpecialFocus()
+  METHOD System.Void set_SpecialFocus(System.String value)
+  METHOD System.Int32 get_Influence()
+  METHOD System.Void set_Influence(System.Int32 value)
+  METHOD XiaWorld.ThingStep.DayCheck get_TDisasterDCheck()
+  METHOD System.Void set_TDisasterDCheck(XiaWorld.ThingStep.DayCheck value)
+  METHOD System.Collections.Generic.List<XiaWorld.OutspreadMgr+MovingMember> get_Moving()
+  METHOD System.Single get_BuildCostReducep()
+  METHOD System.Void set_BuildCostReducep(System.Single value)
+  METHOD System.Single get_PopulationAddp()
+  METHOD System.Void set_PopulationAddp(System.Single value)
+  METHOD System.Int32 get_GodCityAdd()
+  METHOD System.Void set_GodCityAdd(System.Int32 value)
+  METHOD System.Int32 get_KnowLike()
+  METHOD System.Void set_KnowLike(System.Int32 value)
+  METHOD System.Void OnStep(System.Single dt)
+  METHOD System.Collections.Generic.List<System.String> FindBaseKey(System.Collections.Generic.Dictionary<System.String,T> dic, System.Func<System.String,T> getT, System.Func<T,System.Boolean> tIsBase)
+  METHOD System.Void CheckStepSec(System.Single dt)
+  METHOD System.Void Save(XiaWorld.SaveLoad.SL_GAME data)
+  METHOD System.Collections.IEnumerator Load(XiaWorld.SaveLoad.SL_GAME data)
+  METHOD System.Void AfterLoad(XiaWorld.SaveLoad.SL_GAME data)
+  METHOD System.Void BuildPlacePointLink()
+  METHOD XiaWorld.OutspreadMgr+OutsStoryInfo OutsStoryDict(XiaWorld.OutspreadMgr+Region r, System.String story, XiaWorld.OutspreadMgr+Region+WaitingBuild waitingBuild, System.Collections.Generic.List<System.Int32> schools)
+  METHOD System.Void TriggerStory(XiaWorld.OutspreadMgr+Region region, System.String story, XiaWorld.OutspreadMgr+Region+WaitingBuild waitingBuild, System.Collections.Generic.List<System.Int32> schools)
+  METHOD System.Single GetAddFaithAdd()
+  METHOD System.Single Stability2Faith(System.Int32 Stability)
+  METHOD System.Void AddInfluence(System.Int32 add)
+  METHOD System.Int32 GetOpenRegionCount()
+  METHOD System.Int32 GetRegionPopulationAddPerday(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void RegionAttractiveUpdate()
+  METHOD System.Void RegionUpdate(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Boolean CheckRegionBuildLandform(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadBuildCondition outspreadBuildCondition)
+  METHOD System.Boolean CheckRegionBuildCondition(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadBuildCondition outspreadBuildCondition)
+  METHOD System.Boolean CheckPointBuildCondition(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, XiaWorld.OutspreadBuildCondition outspreadBuildCondition)
+  METHOD System.Boolean CheckBuildCountLimit(XiaWorld.OutspreadMgr+Region region, System.String build, XiaWorld.OutspreadBuildTypeDef typedef)
+  METHOD System.Boolean SetBuild(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, XiaWorld.OutsBuildType t, System.String build)
+  METHOD System.Void UpgradeBuild(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, XiaWorld.OutsBuildType t)
+  METHOD System.Void FinishWait(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, XiaWorld.OutsBuildType t)
+  METHOD System.Void CancelWaitBuild(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, XiaWorld.OutsBuildType t)
+  METHOD System.String CanAddErrorCodeDesc(System.Int32 code)
+  METHOD System.Int32 CanAdd_WithErrorCode(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, System.String build, XiaWorld.OutsBuildType buildTypeNeed, System.Boolean replace, System.Boolean free)
+  METHOD System.Boolean CanAdd(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, System.String build, XiaWorld.OutsBuildType buildTypeNeed, System.Boolean replace, System.Boolean free)
+  METHOD System.Boolean AddBuild(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, System.String build, XiaWorld.OutsBuildType buildTypeNeed, System.Boolean free)
+  METHOD System.Void _Remove(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, System.String build, XiaWorld.OutsBuildType tType)
+  METHOD System.Void _Add(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, System.String build, XiaWorld.OutsBuildType tType)
+  METHOD System.Void _AddWait(XiaWorld.OutspreadMgr+Region region, System.Int32 idx, System.String build, XiaWorld.OutsBuildType tType, XiaWorld.OutspreadBuildDef buildDef)
+  METHOD System.Void ActiveBuild(XiaWorld.OutspreadMgr+Region region, System.String build)
+  METHOD System.Void DeactiveBuild(XiaWorld.OutspreadMgr+Region region, System.String build)
+  METHOD System.Void AddBuildUnlockFlag(XiaWorld.OutspreadMgr+Region region, System.String build, System.Int32 v)
+  METHOD System.Void AddPolicyUnlockFlag(XiaWorld.OutspreadMgr+Region region, System.String policy, System.Int32 v)
+  METHOD System.Boolean IsPolicyUnlock(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadPolicyDef def)
+  METHOD System.Void AddBuildSkillUnlockFlag(XiaWorld.OutspreadMgr+Region region, System.String skill, System.Int32 v)
+  METHOD System.Boolean IsBuildUnlock(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadBuildDef def)
+  METHOD System.Boolean CanCostMats(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadCost def, System.Single scale)
+  METHOD System.Boolean CanCostItem(System.String ItemName, System.Int32 count)
+  METHOD System.Boolean CanCostMatItems(XiaWorld.OutspreadCost def, System.Single scale)
+  METHOD System.Boolean CostMaterial(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadCost def, System.Single scale)
+  METHOD System.Void CostItem(XiaWorld.OutspreadMgr+Region region, System.String itemName, System.Int32 count, XiaWorld.Map map)
+  METHOD System.Void GiveBackMaterial(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadCost def, System.Single scale)
+  METHOD System.Int32 FindAddItemKey()
+  METHOD System.Void AddItem2PlayerMap(System.Int32 k, System.String item, System.Int32 count)
+  METHOD System.Void CostRegionStorageItem(XiaWorld.OutspreadMgr+Region firstRegion, System.String item, System.Int32& count)
+  METHOD System.Void CostFromRegionStorage(XiaWorld.OutspreadMgr+Region firstRegion, System.String item, System.Int32 count)
+  METHOD System.Void Add2RegionStorage(XiaWorld.OutspreadMgr+Region region, System.String item, System.Int32 count)
+  METHOD System.Void Product_WithScale(XiaWorld.OutspreadMgr+Region region, System.String Product, System.Int32 Count)
+  METHOD System.Void Product(XiaWorld.OutspreadMgr+Region region, System.String Product, System.Int32 Count)
+  METHOD System.Void _Product(XiaWorld.OutspreadMgr+Region region, System.String Product, System.Int32 Count, System.Single scale)
+  METHOD System.Void WaitingBuildUpdate(XiaWorld.OutspreadMgr+Region region, System.Double now, System.Int32 day)
+  METHOD System.Void TraverProduct(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutsBuildType t, System.Int32 idx, System.String productType, System.Boolean advance, System.Action<XiaWorld.OutspreadMgr+Region,System.String,System.Int32> func)
+  METHOD System.Void GetOutsInfo(System.Collections.Generic.Dictionary`2[[System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089],[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]& product, System.Collections.Generic.List`1[[System.Collections.Generic.KeyValuePair`2[[XiaWorld.OutspreadCost, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null],[System.Single, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089]]& cost)
+  METHOD System.Void GiveBuildProduct(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutsBuildType t, System.Int32 idx, System.String build, System.Boolean advance)
+  METHOD System.Void RegionProductUpdate(XiaWorld.OutspreadMgr+Region region, System.Double now, System.Int32 day)
+  METHOD System.Void BuildUpdate(XiaWorld.OutspreadMgr+Region region, System.Double now, System.Int32 day)
+  METHOD System.Void GiveAdvanceProduct(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void TraverRegionProduct(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutsBuildType t, System.Int32 idx, System.String build, System.Int32 level, System.Boolean advance, System.Action<XiaWorld.OutspreadMgr+Region,System.String,System.Int32> func)
+  METHOD System.Void TakeProductFromStorage(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void AddItem2Map4Lua(System.String item, System.Int32 count)
+  METHOD System.Void ClearNpcFaithPerDayCache()
+  METHOD System.Single GetAddFaithPerDay(XiaWorld.OutspreadMgr+Region region, System.Boolean force)
+  METHOD System.Int32 GetFaithNpcStatueMaxCount(XiaWorld.Npc npc)
+  METHOD System.Int32 GetFaithNpcStatueCount(XiaWorld.Npc npc)
+  METHOD System.Void SetFaithNpc(XiaWorld.OutspreadMgr+Region region, XiaWorld.Npc npc)
+  METHOD System.Void NpcFaithCountChange(XiaWorld.Npc npc, System.Int32 countNow)
+  METHOD System.Single GetNpcFaithAddPerDay(XiaWorld.Npc npc)
+  METHOD System.Void FaithNpcGodPracticePopulationUpdate(XiaWorld.OutspreadMgr+Region region, System.Single dt)
+  METHOD System.Single GetFaithNpcTianJieAbout(XiaWorld.Npc npc)
+  METHOD System.Void SetPolicy(XiaWorld.OutspreadMgr+Region region, System.String policy, System.String reason)
+  METHOD System.Void SetSpecialFocus(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void RefreshPolicyInterval()
+  METHOD XiaWorld.OutspreadMgr+Region+SolveWay GetLastSolveWay(System.String policy)
+  METHOD System.Void TriggerPolicy4Teach(XiaWorld.OutspreadMgr+Region region, System.String policy, System.String storyname)
+  METHOD System.Void TriggerPolicy(XiaWorld.OutspreadMgr+Region region, System.String policy, System.Double now)
+  METHOD System.Void FinishPolicyStory(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Single GetPolicyInterval(XiaWorld.OutspreadMgr+Region region)
+  METHOD System.Void RegionPolicyStep(XiaWorld.OutspreadMgr+Region region, System.Double now)
+  METHOD System.Void RegionPolicyCostStep(XiaWorld.OutspreadMgr+Region region, System.Int32 day)
+  METHOD System.Void RegionPolicyDailyEffect(XiaWorld.OutspreadMgr+Region region, XiaWorld.OutspreadPolicyDailyEffect de)
+TYPE XiaWorld.OutspreadMgr+Region : System.Object
+  FIELD System.Boolean SpecialFocus
+  FIELD System.String RegionName
+  FIELD System.String DisplayPrefix
+  FIELD System.String DisplaySuffix
+  FIELD System.Int32 Level
+  FIELD System.Boolean IsSupervise
+  FIELD XiaWorld.OutspreadMgr+Region+SupriviseData SupData
+  FIELD System.Collections.Generic.Dictionary<System.Int32,System.Collections.Generic.Dictionary<System.Int32,System.String>> Builds
+  FIELD System.Collections.Generic.Dictionary<System.Int32,System.Collections.Generic.Dictionary<System.Int32,XiaWorld.OutspreadMgr+Region+WaitingBuild>> WaitingBuilds
+  FIELD System.Collections.Generic.Dictionary<System.Int32,XiaWorld.OutspreadMgr+Region+Religion> SchoolReligion
+  FIELD System.Int32 MaxFaith
+  FIELD System.Int32 Faith
+  FIELD System.Int32 FaithCollectLevel
+  FIELD System.Single FaithCollectSpeedAddp
+  FIELD System.Int32 FaithNpcId
+  FIELD System.Single FaithAddToNpcT
+  FIELD System.Single FaithAddToBuildSkipT
+  FIELD XiaWorld.Npc _FaithNpc
+  FIELD System.Int32 Stability
+  FIELD System.Int32 Attractive
+  FIELD System.Single AttractiveScale
+  FIELD System.Int32 Population
+  FIELD System.Single IncreateScale
+  FIELD System.Single IncreaseDur
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> UnlockBuild
+  FIELD System.Collections.Generic.Dictionary<System.Int32,System.Int32> MaxTypeBuildCount
+  FIELD XiaWorld.OutspreadMgr+Region+SchoolUnion UnionData
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> ProductStorage
+  FIELD System.Int32 MaxStorageSize
+  FIELD System.Int32 LastAutoProductDay
+  FIELD XiaWorld.OutspreadMgr+Region+PolicyData RegionPolicy
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> BuildSkill
+  FIELD System.Collections.Generic.Dictionary<System.Int32,System.Collections.Generic.Dictionary<System.String,System.Double>> lastSkillTime
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> UnlockPolicy
+  FIELD XiaWorld.OutspreadMgr+Region+DisasterData Disaster
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> Stories
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> LuaData
+  FIELD System.Int32 AutoFaithNpcId
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> BanDisaster
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> BuildCount
+  FIELD System.Collections.Generic.Dictionary<System.String,System.Int32> WaitBuildCount
+  FIELD XiaWorld.OutspreadRegionDef _def
+  PROPERTY System.String DisplayName
+  PROPERTY System.Int32 ReligionCount
+  PROPERTY System.Int32 NotMeReligionCount
+  PROPERTY XiaWorld.Npc FaithNpc
+  PROPERTY System.Int32 SelfReligionPopulation
+  PROPERTY System.Int32 SelfReligionAttracitve
+  PROPERTY System.Int32 CanStorageSize
+  PROPERTY System.String Policy
+  PROPERTY System.Int32 UnbelieverCount
+  PROPERTY XiaWorld.OutspreadRegionDef def
+  METHOD System.String get_DisplayName()
+  METHOD System.Int32 get_ReligionCount()
+  METHOD System.Int32 get_NotMeReligionCount()
+  METHOD XiaWorld.Npc get_FaithNpc()
+  METHOD System.Void set_FaithNpc(XiaWorld.Npc value)
+  METHOD System.Int32 get_SelfReligionPopulation()
+  METHOD System.Int32 get_SelfReligionAttracitve()
+  METHOD System.Void set_SelfReligionAttracitve(System.Int32 value)
+  METHOD System.Int32 get_CanStorageSize()
+  METHOD System.String get_Policy()
+  METHOD System.Int32 get_UnbelieverCount()
+  METHOD XiaWorld.OutspreadRegionDef get_def()
+  METHOD System.Void AfterLoad()
+  METHOD System.Collections.IEnumerator GetEnumer_Build()
+  METHOD System.Collections.IEnumerator GetEnumer_WaitBuild()
+  METHOD System.Void _Foreach(System.Collections.Generic.Dictionary<System.Int32,System.Collections.Generic.Dictionary<System.Int32,T>> dic, System.Action<XiaWorld.OutsBuildType,System.Int32,T> func)
+  METHOD System.Void ForeachBuild(System.Action<XiaWorld.OutsBuildType,System.Int32,System.String> func)
+  METHOD System.Void ForeachWaitBuild(System.Action<XiaWorld.OutsBuildType,System.Int32,XiaWorld.OutspreadMgr+Region+WaitingBuild> func)
+  METHOD System.Void UnlockCount(XiaWorld.OutsBuildType type, System.Int32 count)
+  METHOD System.Int32 GetAvailableBuildCount(XiaWorld.OutsBuildType type)
+  METHOD System.Int32 GetUsedBuildCount(XiaWorld.OutsBuildType type)
+  METHOD System.Int32 GetBuildCount(XiaWorld.OutsBuildType type)
+  METHOD System.String GetBuild(System.Int32 idx, XiaWorld.OutsBuildType type)
+  METHOD XiaWorld.OutspreadMgr+Region+WaitingBuild GetWaitingBuild(System.Int32 idx, XiaWorld.OutsBuildType type)
+  METHOD System.Void SetBuild(System.Int32 idx, XiaWorld.OutsBuildType type, System.String v)
+  METHOD XiaWorld.OutspreadMgr+Region+WaitingBuild SetWaitBuild(System.Int32 idx, XiaWorld.OutsBuildType type, System.String v)
+  METHOD System.Void SetPolicy(System.String policy)
+  METHOD XiaWorld.OutspreadMgr+Region+Religion GetOrAddReligion(System.Int32 school)
+  METHOD XiaWorld.OutspreadMgr+Region+Religion GetReligion(System.Int32 school)
+  METHOD System.Void RemoveReligion(System.Int32 school)
+  METHOD System.Void RawAddPopulation(System.Int32 add)
+  METHOD System.Void AddPopulation(System.Int32 add, System.Int32 school)
+  METHOD System.Void ReligonAttracive2Population()
+  METHOD System.Void SetSchoolRAttractive(System.Int32 school, System.Int32 v)
+  METHOD System.Void AddSchoolRAttractive(System.Int32 school, System.Int32 add)
+  METHOD System.Void _AddSchoolRPopulation(System.Int32 school, System.Int32 add)
+  METHOD System.Void AddSchoolRPopulation(System.Int32 school, System.Int32 add)
+  METHOD System.Int32 TrulyAddRPopulation(System.Int32 count, System.Int32 toschool, System.Boolean isDisaster)
+  METHOD System.Int32 GetStability()
+  METHOD System.Int32 AddStability(System.Int32 add)
+  METHOD XiaWorld.OutspreadMgr+StabilityLevel GetStabilityLevel()
+  METHOD System.Void AddFaith(System.Int32 add)
+  METHOD XLua.LuaTable GetProductInfo(System.Boolean advance)
+  METHOD System.Void AddIntoStorage(System.String item, System.Int32 count)
+  METHOD System.Void Influencial(System.Int32 add)
+  METHOD System.Int32 GetRegionSchool()
+  METHOD System.Int32 GetNotSelfRegionSchool()
+  METHOD System.Int32 GetLuaData(System.String key)
+  METHOD System.Void SetLuaData(System.String key, System.Int32 v)
+TYPE XiaWorld.OutspreadMgr+Region+Member : System.Object
+  FIELD System.Int32 memberid
+  FIELD System.Single[] fiveBase
+  FIELD System.String[] flag
+  FIELD System.Int32[] skilllevel
+  FIELD System.String name
+  FIELD XiaWorld.g_emNpcSex sex
+  FIELD System.Int32 seed
+  FIELD System.Single age
+  FIELD System.Int32 reincarid
+  FIELD System.String _race
+  FIELD System.Collections.Generic.HashSet<System.Int32> backstories
+  FIELD System.Collections.Generic.HashSet<System.String> features
+  FIELD System.Boolean setfeature
+  PROPERTY System.Int32 Fight
+  PROPERTY System.Int32 Social
+  PROPERTY System.Int32 Mining
+  PROPERTY System.Int32 Farming
+  PROPERTY System.String Race
+  METHOD System.Int32 get_Fight()
+  METHOD System.Void set_Fight(System.Int32 value)
+  METHOD System.Int32 get_Social()
+  METHOD System.Void set_Social(System.Int32 value)
+  METHOD System.Int32 get_Mining()
+  METHOD System.Void set_Mining(System.Int32 value)
+  METHOD System.Int32 get_Farming()
+  METHOD System.Void set_Farming(System.Int32 value)
+  METHOD System.String get_Race()
+  METHOD System.Void set_Race(System.String value)
+  METHOD System.Void MakeSureFeature()
+  METHOD System.Void GeneratorNpc(XiaWorld.Npc npc)
+TYPE XiaWorld.OutspreadMgr+Region+WaitingBuild : System.Object
+  FIELD System.String Build
+  FIELD System.Double FinishTime
+  FIELD System.Double LastCurbTime
+  FIELD System.Double Duration
+  FIELD XiaWorld.OutspreadBuildDef _def
+  PROPERTY XiaWorld.OutspreadBuildDef def
+  METHOD System.Void ExtendWaitTime(System.Single add)
+  METHOD XiaWorld.OutspreadBuildDef get_def()
+TYPE XiaWorld.OutspreadMgr+MovingMember : System.Object
+  FIELD System.Int32 NpcId
+  FIELD System.String From
+  FIELD System.String To
+  FIELD System.Single Dur
+  FIELD System.Single Need
+  PROPERTY System.Single Percent
+  METHOD System.Single get_Percent()
+TYPE XiaWorld.OutsBuildType : System.Enum
+  ENUM None = 0
+  ENUM Point = 1
+  ENUM Region = 2
+  ENUM Wonder = 3
+  FIELD System.Int32 value__
+  FIELD XiaWorld.OutsBuildType None
+  FIELD XiaWorld.OutsBuildType Point
+  FIELD XiaWorld.OutsBuildType Region
+  FIELD XiaWorld.OutsBuildType Wonder

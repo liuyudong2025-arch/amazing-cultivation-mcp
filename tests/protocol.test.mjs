@@ -28,6 +28,14 @@ test('status delegates to the in-game runtime', async () => {
   assert.equal(calls[0][0], 'session.status');
 });
 
+test('status repairs the bridge capability list for recently added native adapters', async () => {
+  const handle = createHandler({ runtimeCall: async () => ({ success: true, data: { methods: ['session.status'] } }) });
+  const response = await handle({ jsonrpc: '2.0', id: 22, method: 'tools/call', params: { name: 'acsmcp_call', arguments: { method: 'session.status', args: {} } } });
+  const body = JSON.parse(response.result.content[0].text);
+  assert.ok(body.data.methods.includes('state.godBuildingCatalog'));
+  assert.ok(body.data.methods.includes('game.moveNpcTo'));
+});
+
 test('invalid calls become MCP tool errors', async () => {
   const handle = createHandler();
   const response = await handle({ jsonrpc: '2.0', id: 4, method: 'tools/call', params: { name: 'acsmcp_call', arguments: { method: 'ui.click', args: {} } } });
@@ -73,6 +81,75 @@ test('all in-game adapter methods are exposed and routed', async () => {
     assert.equal(response.result.isError, undefined, method);
   }
   assert.deepEqual(routed, methods);
+});
+
+test('0.9 advanced gameplay domains are exposed', () => {
+  const methods = TOOLS[0].inputSchema.properties.method.enum;
+  for (const method of [
+    'state.formations', 'state.formationCatalog', 'game.createFormation', 'game.cancelFormation',
+    'state.recipes', 'state.productionCatalog', 'game.apprentice', 'game.teachSecret',
+    'state.areas', 'state.areaCatalog', 'game.createArea', 'game.configurePlantArea', 'game.configureStorageArea',
+    'state.trade', 'state.tradeWindow', 'game.openSchoolTrade', 'game.confirmTrade',
+    'state.worldMap', 'state.storyChoice', 'game.startExplore', 'game.recallExplorer', 'game.chooseStoryOption',
+  ]) assert.ok(methods.includes(method), method);
+});
+
+test('feng shui and qi planning methods are exposed', () => {
+  const methods = TOOLS[0].inputSchema.properties.method.enum;
+  for (const method of ['state.qiField', 'state.fengShui', 'helper.planSpiritGathering', 'helper.planOminousRoom']) {
+    assert.ok(methods.includes(method), method);
+  }
+});
+
+test('advanced cultivation, construction, and population adapters are exposed', () => {
+  const methods = TOOLS[0].inputSchema.properties.method.enum;
+  for (const method of [
+    'state.breakthrough', 'state.bodyCultivation', 'state.esotericaCatalog', 'state.population',
+    'game.useItem', 'game.changeBodyAttitude', 'game.beginBodyQuenching', 'game.cancelBodyQuenching',
+    'game.changeBuildingMaterial', 'game.dismantleBuilding',
+  ]) assert.ok(methods.includes(method), method);
+});
+
+test('formation authoring, guard assignment, and tracked orchestration are exposed', () => {
+  const methods = TOOLS[0].inputSchema.properties.method.enum;
+  for (const method of [
+    'game.createFormationShape', 'game.removeFormationShape', 'game.saveFormationScheme', 'game.removeFormationScheme',
+    'game.configureGuardArea', 'helper.buildLayout', 'helper.dismantleAndVerify',
+    'helper.prepareBreakthrough', 'helper.refineAndTrack',
+    'state.spellCatalog', 'state.godCultivation', 'state.interactions', 'game.performTalkAction', 'game.openGodCity',
+    'game.moveBuilding',
+    'state.godBuildingCatalog', 'game.createGodBuilding', 'game.upgradeGodBuilding',
+    'game.removeGodBuilding', 'game.toggleGodBuilding', 'game.setGodBuildingGuard',
+    'helper.emergencyDisengage',
+    'game.moveNpcTo', 'helper.moveAnimalsToBreedingArea',
+    'helper.listLayoutTemplates', 'helper.saveLayoutTemplate', 'helper.deleteLayoutTemplate', 'helper.buildLayoutTemplate',
+    'state.skillTree', 'game.learnSkillTreeNode',
+    'helper.commandFormationCombat', 'helper.retreatTo',
+    'state.outspread', 'state.outspreadCatalog', 'game.openOutspreadRegion', 'game.setOutspreadPolicy',
+    'game.setOutspreadBuild', 'game.cancelOutspreadBuild', 'game.setOutspreadChief', 'game.sendOutspreadMember',
+    'game.removeOutspreadMember', 'game.startOutspreadSupervision', 'game.collectOutspreadProducts',
+    'state.dlc',
+    'state.refiningForecast',
+  ]) assert.ok(methods.includes(method), method);
+});
+
+test('high-level helpers are exposed through the MCP call surface', async () => {
+  const methods = TOOLS[0].inputSchema.properties.method.enum;
+  assert.ok(methods.includes('helper.observe'));
+  assert.ok(methods.includes('helper.ensureWork'));
+  assert.ok(methods.includes('helper.runAndWatch'));
+
+  const handle = createHandler({
+    runtimeCall: async (method) => {
+      if (method === 'state.overview') return { success: true, data: { world: {}, map: {}, school: {}, resources: { items: [], nextOffset: null }, npcs: { items: [], nextOffset: null }, alerts: { items: [] }, selection: { items: [] } } };
+      if (method === 'state.input') return { success: true, data: { ready: true } };
+      if (method === 'state.commands') return { success: true, data: { items: [], truncated: false } };
+      throw new Error(`Unexpected ${method}`);
+    },
+  });
+  const response = await handle({ jsonrpc: '2.0', id: 'helper', method: 'tools/call', params: { name: 'acsmcp_call', arguments: { method: 'helper.observe', args: {} } } });
+  assert.equal(response.result.isError, undefined);
+  assert.equal(JSON.parse(response.result.content[0].text).success, true);
 });
 
 test('runtime.advance uses a sequence, verifies frame progress, and pauses', async () => {

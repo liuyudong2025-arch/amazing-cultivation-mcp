@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 读取《了不起的修仙模拟器》状态</title>
+<style>
+  *{box-sizing:border-box}html,body{margin:0;width:1600px;height:900px;overflow:hidden}
+  body{font-family:"Microsoft YaHei UI","Microsoft YaHei",sans-serif;color:#edf8f2;background:#07110f}
+  .page{position:relative;width:1600px;height:900px;padding:50px 58px;background:
+    radial-gradient(circle at 15% 5%,rgba(51,181,126,.20),transparent 33%),
+    radial-gradient(circle at 94% 96%,rgba(212,161,67,.15),transparent 36%),
+    linear-gradient(135deg,#081310,#0a1715 48%,#07100f)}
+  .page:before{content:"";position:absolute;inset:0;opacity:.07;background-image:linear-gradient(rgba(255,255,255,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.18) 1px,transparent 1px);background-size:32px 32px}
+  .header{position:relative;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px}
+  h1{margin:0;font-size:48px;line-height:1.16;letter-spacing:1px}.gold{color:#eac16f}
+  .sub{margin-top:12px;color:#94b3a8;font-size:20px}.live{display:flex;align-items:center;gap:11px;border:1px solid #2b7a5c;background:rgba(17,58,45,.72);border-radius:999px;padding:13px 20px;font:700 17px Consolas,monospace;color:#8ff0bc}
+  .dot{width:10px;height:10px;border-radius:50%;background:#56e596;box-shadow:0 0 14px #56e596}
+  .layout{position:relative;display:grid;grid-template-columns:590px 1fr;gap:24px;height:674px}
+  .panel{background:rgba(12,27,23,.93);border:1px solid #28473d;border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden}
+  .terminal{display:flex;flex-direction:column}.bar{height:52px;display:flex;align-items:center;padding:0 20px;background:#10231e;border-bottom:1px solid #28473d;color:#8fa99f;font:15px Consolas,monospace}.lights{display:flex;gap:8px;margin-right:18px}.lights i{display:block;width:11px;height:11px;border-radius:50%}.lights i:nth-child(1){background:#e46f62}.lights i:nth-child(2){background:#e2b75a}.lights i:nth-child(3){background:#56c98a}
+  pre{margin:0;padding:23px 25px;font:16px/1.56 Consolas,"Microsoft YaHei UI",monospace;color:#b9d4ca;white-space:pre-wrap}.cmd{color:#eac16f}.key{color:#77dca9}.str{color:#bddbff}.num{color:#f1c47c}.ok{color:#62e89f}
+  .right{display:grid;grid-template-rows:194px 272px 160px;gap:24px}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:19px}.card{background:#10241e;border:1px solid #2a4a3f;border-radius:14px;padding:18px}.label{color:#829d94;font-size:15px}.value{margin-top:8px;font-size:29px;font-weight:800}.small{font-size:18px;color:#c8ddd5;margin-top:5px}
+  .section-title{padding:18px 22px 0;color:#eac16f;font-size:19px;font-weight:700}.people{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:15px 19px 19px}.person{position:relative;background:#10241e;border:1px solid #2a4a3f;border-radius:14px;padding:17px}.person .name{font-size:22px;font-weight:800}.tag{display:inline-block;margin-top:8px;border-radius:6px;padding:4px 8px;background:#19372c;color:#8fe2b5;font-size:13px}.job{margin-top:14px;color:#b5c9c1;font-size:16px}.meter{height:7px;margin-top:12px;border-radius:9px;background:#263b34;overflow:hidden}.meter i{display:block;height:100%;background:linear-gradient(90deg,#43b77f,#79e7ac)}.warn .meter i{background:linear-gradient(90deg,#d56e58,#f1bc64)}.warn:after{content:"需关注";position:absolute;right:14px;top:15px;color:#ffc36b;font-size:13px}
+  .decision{display:flex;align-items:center;gap:20px;padding:18px 22px}.brain{width:62px;height:62px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#246b50,#174332);font-size:31px}.decision strong{font-size:19px;color:#eac16f}.decision p{margin:7px 0 0;color:#c9ddd5;font-size:16px;line-height:1.55}.foot{position:absolute;left:58px;bottom:17px;color:#56766b;font:13px Consolas,monospace}
+</style>
+</head>
+<body><main class="page">
+  <header class="header">
+    <div><h1>AI 正在读取<span class="gold">修仙世界</span></h1><div class="sub">不是识图猜操作，而是直接获取游戏内结构化状态</div></div>
+    <div class="live"><span class="dot"></span> Amazing Cultivation MCP v1.0.2 · LIVE</div>
+  </header>
+  <section class="layout">
+    <div class="panel terminal">
+      <div class="bar"><span class="lights"><i></i><i></i><i></i></span>MCP TOOL · state.overview</div>
+      <pre><span class="cmd">AI → 调用 state.overview</span>
+
+{
+  <span class="key">"bridge"</span>: <span class="str">"connected"</span>,
+  <span class="key">"gameLoaded"</span>: <span class="ok">true</span>,
+  <span class="key">"world"</span>: {
+    <span class="key">"day"</span>: <span class="num">3</span>,
+    <span class="key">"time"</span>: <span class="str">"17:14"</span>,
+    <span class="key">"frame"</span>: <span class="num">31866</span>
+  },
+  <span class="key">"school"</span>: {
+    <span class="key">"name"</span>: <span class="str">"青云门"</span>,
+    <span class="key">"fengShui"</span>: <span class="str">"Good"</span>,
+    <span class="key">"activePopulation"</span>: <span class="num">3</span>
+  },
+  <span class="key">"resources"</span>: {
+    <span class="key">"food"</span>: <span class="num">3380</span>,
+    <span class="key">"wood"</span>: <span class="num">44</span>,
+    <span class="key">"woodBlocks"</span>: <span class="num">26</span>,
+    <span class="key">"spiritStones"</span>: <span class="num">25</span>
+  },
+  <span class="key">"alerts"</span>: [<span class="str">"司徒晨心境不稳"</span>]
+}
+
+<span class="ok">✓ 游戏结构化状态读取完成</span></pre>
+    </div>
+    <div class="right">
+      <div class="panel"><div class="cards">
+        <div class="card"><div class="label">当前门派</div><div class="value">青云门</div><div class="small">风水：良好</div></div>
+        <div class="card"><div class="label">游戏时间</div><div class="value">第 3 天</div><div class="small">17:14</div></div>
+        <div class="card"><div class="label">活跃角色</div><div class="value">3 人</div><div class="small">内门 1 · 外门 2</div></div>
+        <div class="card"><div class="label">地图对象</div><div class="value">8,493</div><div class="small">建筑 18</div></div>
+      </div></div>
+      <div class="panel"><div class="section-title">角色实时状态</div><div class="people">
+        <div class="person"><div class="name">鱼采文</div><span class="tag">外门弟子</span><div class="job">当前任务：筑基</div><div class="small">饱食 73 · 精力 48</div><div class="meter"><i style="width:73%"></i></div></div>
+        <div class="person"><div class="name">南门春梅</div><span class="tag">外门弟子</span><div class="job">当前任务：闲逛</div><div class="small">饱食 72 · 精力 32</div><div class="meter"><i style="width:72%"></i></div></div>
+        <div class="person warn"><div class="name">司徒晨</div><span class="tag">内门弟子</span><div class="job">当前任务：看天</div><div class="small">心境 3.5 · 饱食 30</div><div class="meter"><i style="width:18%"></i></div></div>
+      </div></div>
+      <div class="panel decision"><div class="brain">✦</div><div><strong>AI 决策摘要</strong><p>物资暂时充足，但司徒晨心境过低。下一步优先稳定心境、检查修炼环境，再继续推进门派建设。</p></div></div>
+    </div>
+  </section>
+  <div class="foot">REAL GAME STATE · LOCAL MCP BRIDGE · 2026-10-21</div>
+</main></body></html>

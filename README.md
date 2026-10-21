@@ -40,6 +40,11 @@ WebSocket 的网络回调只负责把请求加入队列。Lua Mod 每帧调用 `
 - FairyGUI 控件树：层级、名称、文本、角色、位置、可见性、可操作状态，以及按钮/列表/下拉框/滑块的当前值。
 - 通过 `targetId` 或语义选择器激活按钮、右键、填写文本、设置选中状态、选择列表项/下拉项和调整滑块。
 - MCP 内置玩法指南，规定“观察 → 决策 → 操作 → 再观察”的可靠闭环与常用操作配方。
+- 0.6 高层 Helper：完整分页、殖民地巡检、开局建议、工作/作息确保、人物选择、命令确保/撤销和受监控时间推进。
+- 0.7 修仙领域能力：人物五维与心情、功法境界、瓶颈与筑基、金丹与道行、秘籍树、术法、丹方/法宝配方、技能、伤病、装备和背包，以及可验证的修炼模式/行为设置。
+- 0.8 战斗、建造和生产：读取 FightBody 并锁定目标、开战/停战、施放技能/法宝、设置自动技能；发现原生建造目录并放置蓝图；读取建筑和生产队列、添加/移除生产任务；改换功法与受确认保护的突破。
+- 0.9 扩展系统：阵法状态与创建/取消、炼丹炼器配方和生产目录、拜师传功、农业仓储区域、门派交易外交状态及原版交易窗口、世界地图与历练派遣/召回。
+- 1.0 风水与聚灵：成片读取原生灵气/五行场、读取建筑风水和房间/灵气区域，并提供聚灵阵与“大凶房”的只读规划器。
 - 世界版本与 UI 快照 ID；重新载入世界后旧目标会失效。
 - 与 rimUIMCP 相同思路的短事务租约、动作 `requestId` 去重/结果缓存，以及可游标轮询的动作事件日志。
 - 本机 HTTP/WebSocket 双令牌鉴权。
@@ -120,6 +125,51 @@ Runtime 会生成：
 {"method":"session.status","args":{}}
 ```
 
+## 高层玩法 Helper
+
+优先让 AI 调用 `helper.*`，只有 Helper 尚未覆盖某项玩法时再组合底层 `state.*`、`game.*` 和 `ui.*`。
+
+| Helper | 作用 |
+| --- | --- |
+| `helper.observe` | 读取世界、门派、人物、资源、警报、输入状态和风险摘要 |
+| `helper.startingPlan` | 生成带状态证据的开局优先事项，不修改游戏 |
+| `helper.readAllNpcs` | 跨页读取全部活动人物并报告世界/帧一致性 |
+| `helper.queryAllThings` | 跨页读取所有匹配的地图对象 |
+| `helper.readAllResources` | 跨页读取完整门派库存 |
+| `helper.ensureWork` | 幂等设置人物工作优先级、启用状态或优先工作 |
+| `helper.ensureSchedule` | 幂等设置一个或多个小时的门派作息 |
+| `helper.selectNpc` | 通过原版地图输入选择人物并读回验证 |
+| `helper.ensureThingCommand` | 确保对象上存在砍伐、采矿、收获等原生命令 |
+| `helper.ensureNoThingCommand` | 确保对象上的指定原生命令已经撤销 |
+| `helper.buildRectangle` | 按矩形逐格建造墙、地板等，逐格验证；遇到失败返回已完成坐标 |
+| `helper.buildLayout` | 按清单建造最多 128 个不同建筑单元，支持每格独立材料、方向并逐格验证 |
+| `helper.buildArea` | 用原版拖拽建造屋顶等区域，并验证房间覆盖格 |
+| `helper.saveLayoutTemplate` / `helper.listLayoutTemplates` | 将建筑清单保存为相对坐标模板并持久化列出，适合聚灵阵、卧房、工坊等复用布局 |
+| `helper.buildLayoutTemplate` / `helper.deleteLayoutTemplate` | 在新原点按 0/90/180/270 度旋转建造模板，或经确认后删除模板 |
+| `helper.emergencyDisengage` | 立即暂停，停止指定角色战斗、取消其阵法并验证脱战状态 |
+| `helper.moveAnimalsToBreedingArea` | 使用原生搬运任务把动物移入繁殖区，并可推进时间验证区域登记 |
+| `helper.commandFormationCombat` | 按集火或轮换策略命令阵法全体成员攻击，并逐人回读战斗目标 |
+| `helper.retreatTo` | 停止战斗、解散相关阵法、向安全坐标编队撤退并可验证到达 |
+| `helper.dismantleAndVerify` | 下达原生拆除命令，并可推进时间直到确认建筑已消失 |
+| `helper.runAndWatch` | 推进游戏并监视多个结构化停止条件，结束时始终暂停 |
+| `helper.planSpiritGathering` | 读取座位周边灵气、五行、障碍、风水和建造目录，给出聚灵阵候选坐标，不自动建造 |
+| `helper.planOminousRoom` | 读取目标房间和附近建筑的原生风水结果，给出“大凶房”迭代方案，不自动建造 |
+| `helper.prepareBreakthrough` | 汇总突破率、环境、灵气、风水和物品，满足阈值时可确认后直接突破 |
+| `helper.refineAndTrack` | 下达原生炼宝任务并追踪到结束，报告输入变化和新获得物品 |
+
+示例：
+
+```json
+{"method":"helper.startingPlan","args":{}}
+{"method":"helper.ensureWork","args":{"id":8684,"workKind":"Plant","priority":3,"enabled":true}}
+{"method":"helper.ensureThingCommand","args":{"command":"Cutoff","id":1050}}
+{"method":"helper.runAndWatch","args":{"conditions":[{"method":"state.world","path":"dayHour","operator":"gte","value":12}],"timeoutMs":30000}}
+{"method":"helper.planSpiritGathering","args":{"x":120,"y":85,"radius":6,"element":"Water"}}
+{"method":"helper.planOminousRoom","args":{"x":132,"y":90,"radius":8}}
+```
+
+`ensure*` 方法会先读取现状，只修改不符合目标的部分，并在返回前读回验证。
+
 ## 游戏内方法
 
 | 方法 | 作用 | 常用参数 |
@@ -133,7 +183,40 @@ Runtime 会生成：
 | `state.map` | 地图尺寸与对象数量 | 无 |
 | `state.npcs` | 活动人物分页列表 | `offset?`, `limit?` |
 | `state.npc` | 单个人物、工作、需求和工作设置 | `id` |
+| `state.npcProfile` | 人物种族、五维、心情、特性和经历 | `id` |
+| `state.npcCultivation` | 功法、境界进度、瓶颈、筑基、金丹、道行、秘籍与配方 | `id` |
+| `state.npcSkills` | 全部已初始化技能、等级、喜爱度、经验和禁用状态 | `id` |
+| `state.npcHealth` | 身体健康、濒死状态、伤病与治疗进度 | `id` |
+| `state.npcInventory` | 已装备和随身物品、法宝与秘籍元数据 | `id` |
+| `state.combat` | 战斗目标、施法、技能冷却、自动技能与法宝 | `id?` |
+| `state.buildCatalog` | 发现原生建造目录及精确建造名称 | `query?` |
+| `state.building` | 建筑进度、风水、工人和生产队列 | `id` |
+| `state.productionCatalog` / `state.recipes` | 建筑生产目录及人物已掌握的炼丹炼器配方 | 建筑或人物 ID、`kind?` |
+| `state.formations` / `state.formationCatalog` | 活动阵法、阵型、节点和预设成员 | `id?` |
+| `state.areas` / `state.areaCatalog` | 农业、仓储等区域及原生区域类型 | `id?`, `type?` |
+| `state.trade` | 门派关系、好感点、倾向和交易货物 | `schoolId?` |
+| `state.worldMap` | 地点解锁、历练成本、预测及在外人员 | `query?` |
+| `state.tradeWindow` / `state.storyChoice` | 当前交易报价与历练/剧情选项 | 无 |
 | `state.grid` | 读取地图格的修仙环境与格内对象 | `key?` 或 `x`,`y`；均省略时读鼠标格 |
+| `state.qiField` | 成片读取灵气、五行、占用物和高灵气格 | `key?` 或 `x`,`y`，`radius?`, `top?` |
+| `state.fengShui` | 读取建筑原生风水值以及 `AreaRoom`/`AreaAura` | 可选 `key` 或 `x`,`y`，`radius?` |
+| `state.breakthrough` | 读取突破条件、成功率及季节、灵气、五行、风水等原生影响项 | `id`, `failureCount?` |
+| `state.godCultivation` | 神修信仰、人口、神国建筑、护法、核心信徒、天劫与飞升状态 | `id` |
+| `state.godBuildingCatalog` | 神国建筑解锁、占格、环位、等级、人口和信仰消耗 | `id` |
+| `state.interactions` | 两名角色间可用的原生江湖互动、缘分、好感、警惕与访客状态 | `actorId`, `targetId` |
+| `state.bodyCultivation` | 读取体修真气、架势、淬体进度与部位 | `id` |
+| `state.esotericaCatalog` | 查询秘籍目录及某角色的习得资格 | `npcId?`, `query?` |
+| `state.spellCatalog` | 查询术法与神通定义、消耗、原生命令及角色习得状态 | `npcId?`, `query?` |
+| `state.skillTree` | 查询当前功法参悟树、前置/互斥、参悟值消耗和原生可学习判定 | `id` |
+| `game.learnSkillTreeNode` | 经原生校验学习参悟节点，并回读新解锁术法/神通 | `id`, `name`, `confirm=true` |
+| `state.outspread` / `state.outspreadCatalog` | 查询门派分舵、成员、建筑、政策、信仰、人口、仓储、灾害、监管及完整可用目录 | `name?` / `region?` |
+| `game.openOutspreadRegion` | 派遣可行动角色开辟分舵 | `region`, `npcId`, `resourceLevel?`, `confirm=true` |
+| `game.setOutspreadPolicy` / `game.setOutspreadBuild` | 按原生解锁与条件校验配置分舵政策和建筑槽位 | `region`, `name`, `type?`, `index?`, `confirm=true` |
+| `game.setOutspreadChief` / `game.sendOutspreadMember` / `game.removeOutspreadMember` | 调度分舵负责人和成员 | `region`, `npcId/memberId`, `confirm=true` |
+| `game.startOutspreadSupervision` / `game.collectOutspreadProducts` | 开始监管或领取分舵库存产物 | `region`, `confirm=true` |
+| `state.dlc` | 查询官方熊猫、武当 DLC 安装状态、Lua 标记和内容路径 | 无 |
+| `state.refiningForecast` | 按原版 `MakeFaBao` 公式计算炼器成功率、品质/灵气继承区间和十二品概率 | `npcId`, `itemId`, `buildingId?` |
+| `state.population` | 分页读取来访者、动物与其他存活角色 | `offset?`, `limit?`, `query?` |
 | `state.things` | 搜索 NPC、建筑、植物、物品等 | `type?`, `query?`, `playerOnly?`, `offset?`, `limit?` |
 | `state.resources` | 门派库存和食物/药物汇总 | `query?`, `offset?`, `limit?` |
 | `state.school` | 门派等级、声望、风水、弟子、解锁与作息 | 无 |
@@ -143,6 +226,32 @@ Runtime 会生成：
 | `state.commandTypes` | 发现当前版本的原生命令定义 | `query?` |
 | `state.commands` | 读取当前原生命令及目标/格子 | `type?`, `limit?` |
 | `state.input` | 读取当前地图输入模式和弹窗阻塞状态 | 无 |
+| `game.setPracticeMode` | 设置人物修炼模式并返回读回状态 | `id`, `mode` |
+| `game.setPracticeBehaviour` | 设置人物当前修炼行为并返回读回状态 | `id`, `behaviour` |
+| `game.changeGong` | 改换功法（高风险确认） | `id`, `gong`, `confirm=true` |
+| `game.promoteInnerDisciple` | 走原版 `Up2Disciple` 流程晋升内门并登记门派弟子 | `id`, `gong`, `difficulty?`, `confirm=true` |
+| `game.beginBreakthrough` | 条件检查后开始突破（高风险确认） | `id`, `confirm=true`, `heavenlyTribulation?` |
+| `game.attackTarget` / `game.stopCombat` | 原生开战、锁定目标与停战 | 人物和目标 ID |
+| `game.castSkill` / `game.setAutoSkills` / `game.castArtifacts` | 战斗技能、自动技能与法宝 | 人物、技能/模式和目标 |
+| `game.beginBuild` / `game.placeBuilding` | 进入原生建造模式并放置蓝图 | 目录名称和地图格 |
+| `game.moveBuilding` | 通过原生搬迁流程为已完成建筑放置目标蓝图 | 建筑 ID、目标格、`confirm=true` |
+| `game.addProductionTask` / `game.removeProductionTask` | 管理建筑生产队列 | 建筑 ID、配方/任务名或任务 ID |
+| `game.createFormation` / `game.cancelFormation` | 按原生阵型结阵或解阵（确认保护） | `shapeId`, `npcIds`, `confirm=true` |
+| `game.createFormationShape` / `game.removeFormationShape` | 用已解锁节点创建并由游戏校验自定义阵型，或删除未使用阵型 | 节点清单或阵型 ID、`confirm=true` |
+| `game.saveFormationScheme` / `game.removeFormationScheme` | 保存或删除阵型的有序成员方案 | 阵型/方案 ID、角色 ID、`confirm=true` |
+| `game.apprentice` / `game.teachSecret` | 拜师并排入原生传功任务（确认保护） | 师徒 ID、秘籍 ID、`confirm=true` |
+| `game.createArea` / `game.addAreaGrid` / `game.removeAreaGrid` | 创建并编辑农业、仓储等原生区域 | 区域类型/ID 和地图格 |
+| `game.configurePlantArea` / `game.configureStorageArea` | 设置作物、门人限制、仓储优先级和出售/品质策略 | 区域 ID 与策略字段 |
+| `game.configureGuardArea` | 设置守卫区敌我/锁定策略并增删守卫成员 | 区域 ID、角色 ID 清单 |
+| `game.moveNpcTo` | 通过原生 `MoveNpc` 任务让门人搬运角色或动物到目标格 | 角色/动物 ID、目标格、`confirm=true` |
+| `game.performTalkAction` | 执行当前原生可用的邀请、闲聊等江湖互动（确认保护） | `actorId`, `targetId`, `action`, `confirm=true` |
+| `game.openGodCity` | 打开神修角色的原版神国管理窗口并返回结构化状态 | `id` |
+| `game.createGodBuilding` / `game.upgradeGodBuilding` | 通过原生条件与资源检查建造或升级神国建筑 | 神修 ID、格子/建筑 ID、`confirm=true` |
+| `game.removeGodBuilding` / `game.toggleGodBuilding` | 拆除、开启或关闭神国建筑及其效果 | 神修 ID、建筑 ID |
+| `game.setGodBuildingGuard` | 为神国建筑配置或清除原生护法 | 神修 ID、建筑 ID、护法 ID、`confirm=true` |
+| `game.openSchoolTrade` | 打开指定门派的原版交易窗口 | `schoolId` |
+| `game.openWorldMap` / `game.startExplore` / `game.recallExplorer` | 世界地图、派遣历练和召回（确认保护） | 人物 ID、地点、`confirm=true` |
+| `game.confirmTrade` / `game.chooseStoryOption` | 核验后成交或选择历练事件（确认保护） | `confirm=true`、选项索引 |
 | `game.focusNpc` | 定位人物并打开原版人物信息 | `id` |
 | `game.focusThing` | 定位任意对象并打开原版信息 | `id` |
 | `game.lookGrid` | 镜头移动至地图格 | `key` 或 `x`,`y` |
@@ -152,6 +261,7 @@ Runtime 会生成：
 | `game.setVipWork` | 设置人物优先工作 | `id`, `workKind` |
 | `game.interruptNpcJob` | 请求中断人物当前可中断工作 | `id` |
 | `game.setSchedule` | 修改一个小时的门派作息 | `hour`, `plan` |
+| `game.setSchoolMaster` | 通过原版 `SchoolMgr.SetMaster` 设置掌门并回读验证 | `id`, `confirm=true` |
 | `game.selectCommand` | 进入原版地图命令选择模式 | `name` |
 | `game.addThingCommand` | 给对象添加原生命令并读回验证 | `command`, `id`, `params?` |
 | `game.addGridCommand` | 给地图格添加原生命令并读回验证 | `command`, `key` 或 `x`,`y`, `params?` |
